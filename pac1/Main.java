@@ -24,8 +24,14 @@ public class Main {
 			e.printStackTrace();
 		}
 		try {
-			System.out.println(api.avgGoldPrice("2016-01-01", "2017-01-01"));
-		} catch (IOException | ParserConfigurationException | SAXException e) {
+			System.out.println(api.biggestAmplitude("2017-12-01"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
