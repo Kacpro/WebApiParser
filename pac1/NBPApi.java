@@ -7,6 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
@@ -140,7 +144,7 @@ public class NBPApi extends GeneralAPI
 				{
 					min = buffer;
 					currencyName = ((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Currency").item(0).getTextContent();
-					currencyCode = ((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Code").item(0).getTextContent();
+					currencyCode = code;
 				}
 			}
 			catch(FileNotFoundException e)
@@ -150,7 +154,61 @@ public class NBPApi extends GeneralAPI
 		return "Najtañsza waluta w danym dniu\nData: " + date + "\nWaluta: " + currencyName + " (" + currencyCode + ") "+ "\nCena: " + min;
 	}
 	
-	
+	public String profitSort(String date, int number) throws IOException, ParserConfigurationException, SAXException
+	{
+		SortedMap<Double, String> profitMap = new TreeMap<>();
+		for (String code : codeList)
+		{
+			try
+			{
+			Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/c/" + code + "/" + date + "/?format=xml");
+			Double bid = Double.parseDouble((((Element)((Element)((Element) doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0)).getElementsByTagName("Rate").item(0)).getElementsByTagName("Bid").item(0).getTextContent()));
+			Double ask = Double.parseDouble((((Element)((Element)((Element) doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0)).getElementsByTagName("Rate").item(0)).getElementsByTagName("Ask").item(0).getTextContent()));
+			Double value = ask - bid;
+			String name = ((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Currency").item(0).getTextContent() + " (" + code + ") ";
+			profitMap.put(value, name);
+			}
+			catch(FileNotFoundException e)
+			{
+			}
+		}
+		String result = "";
+		for (int i=0;i<number;i++)
+		{
+			result += profitMap.get(profitMap.lastKey()) + " - " + profitMap.lastKey() + "\n";
+			profitMap = profitMap.headMap(profitMap.lastKey());
+		}
+		return result;
+	}
 	
 	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

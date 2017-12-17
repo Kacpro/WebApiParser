@@ -30,7 +30,7 @@ public class Main {
 			e.printStackTrace();
 		}
 		try {
-			System.out.println(api.cheapestCurrency("2017-12-01"));
+			System.out.println(api.profitSort("2017-12-13", 10));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
