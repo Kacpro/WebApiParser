@@ -1,8 +1,6 @@
 package pac1;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 
 
@@ -25,17 +23,11 @@ public abstract class GeneralAPI
 	protected Document getXMLDoc(String strUrl) throws IOException, ParserConfigurationException, SAXException
 	{
 		URL url = new URL(strUrl);
-		BufferedReader reader = new BufferedReader(new InputStreamReader( url.openStream()));
-		String file = "";
-		String line;
-		while ((line = reader.readLine()) != null)
-		{
-			file += line;
-		}
-		reader.close();
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		docFactory.setNamespaceAware(true);
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-		Document doc = docBuilder.parse(file);
+
+		Document doc = docBuilder.parse(url.openStream());
 		return doc;
 	}
 }
