@@ -30,14 +30,8 @@ public class Main {
 			e.printStackTrace();
 		}
 		try {
-			System.out.println(api.profitSort("2017-12-13", 10));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
+			System.out.println(api.bestAndWorstDayToBuy("usd"));
+		} catch (IOException | ParserConfigurationException | SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -4,10 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -179,6 +180,31 @@ public class NBPApi extends GeneralAPI
 			profitMap = profitMap.headMap(profitMap.lastKey());
 		}
 		return result;
+	}
+	
+	
+	public String bestAndWorstDayToBuy(String currency) throws IOException, ParserConfigurationException, SAXException
+	{
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar cal  = new GregorianCalendar();
+		Date currentDate = cal.getTime();
+		cal.add(Calendar.DATE, -367);
+		Date startDate = cal.getTime();
+		String now = dateFormat.format(currentDate);
+		String then = dateFormat.format(startDate);
+		
+		Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/" + then + "/" + now +"/?format=xml");
+		NodeList rateList = ((Element)((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0)).getElementsByTagName("Rate");
+		SortedMap<Double, String> rateMap = new TreeMap<>();
+		Node rate = rateList.item(0);
+		while (rate != null)
+		{
+			String date = ((Element) rate).getElementsByTagName("EffectiveDate").item(0).getTextContent();
+			Double price = Double.parseDouble(((Element) rate).getElementsByTagName("Mid").item(0).getTextContent());
+			rateMap.put(price, date);
+			rate = rate.getNextSibling();
+		}
+		return "Cena max: " + rateMap.get(rateMap.lastKey()) + "  -  " + rateMap.lastKey() + "\nCena min: " + rateMap.get(rateMap.firstKey()) + "  -  " + rateMap.firstKey();
 	}
 	
 	
