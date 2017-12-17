@@ -2,7 +2,8 @@ package pac1;
 
 import java.io.IOException;
 import java.net.URL;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -29,5 +30,12 @@ public abstract class GeneralAPI
 
 		Document doc = docBuilder.parse(url.openStream());
 		return doc;
+	}
+	
+	protected Boolean dateIsValid(String date)
+	{
+		String pattern = "\\d{4}-\\d{2}-\\d{2}";
+		Matcher matcher = Pattern.compile("").matcher(date);
+		return matcher.matches();
 	}
 }
