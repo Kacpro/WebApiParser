@@ -8,7 +8,7 @@ import org.xml.sax.SAXException;
 
 public class Main {
 
-	public static void main(String[] args) 
+	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException 
 	{
 		NBPApi api = null;
 		try {
@@ -35,5 +35,6 @@ public class Main {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		api.printGraph("usd", "2017-01-10", "2017-10-01");
 	}
 }

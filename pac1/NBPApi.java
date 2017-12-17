@@ -207,6 +207,34 @@ public class NBPApi extends GeneralAPI
 		return "Cena max: " + rateMap.get(rateMap.lastKey()) + "  -  " + rateMap.lastKey() + "\nCena min: " + rateMap.get(rateMap.firstKey()) + "  -  " + rateMap.firstKey();
 	}
 	
+	public void printGraph(String currency, String startDate, String endDate) throws IOException, ParserConfigurationException, SAXException
+	{
+		Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/" + startDate + "/" + endDate +"/?format=xml");
+		NodeList rateList = ((Element)((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0)).getElementsByTagName("Rate");
+		SortedMap<Double, String> rateMap = new TreeMap<>();
+		Node rate = rateList.item(0);
+		while (rate != null)
+		{
+			String date = ((Element) rate).getElementsByTagName("EffectiveDate").item(0).getTextContent();
+			Double price = Double.parseDouble(((Element) rate).getElementsByTagName("Mid").item(0).getTextContent());
+			rateMap.put(price, date);
+			rate = rate.getNextSibling();
+		}
+		rate = rateList.item(0);
+		Double step = (rateMap.lastKey() - rateMap.firstKey())/100;
+		while (rate != null)
+		{
+			Double price = Double.parseDouble(((Element) rate).getElementsByTagName("Mid").item(0).getTextContent());
+			Double value = price - rateMap.firstKey();
+			System.out.print(rateMap.get(price) +"    X");
+			for (int i=0; i< value*1.0/step ; i++)
+			{
+				System.out.print("X");
+			}
+			System.out.println("");	
+			rate = rate.getNextSibling();
+		}
+	}
 	
 }
 
