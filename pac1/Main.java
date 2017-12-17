@@ -24,7 +24,7 @@ public class Main {
 			e.printStackTrace();
 		}
 		try {
-			System.out.println(api.currencyPrice("usd", "2016-04-04"));
+			System.out.println(api.avgGoldPrice("2016-01-01", "2017-01-01"));
 		} catch (IOException | ParserConfigurationException | SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

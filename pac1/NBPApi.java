@@ -41,4 +41,24 @@ public class NBPApi extends GeneralAPI
 		String mid = element.getElementsByTagName("Mid").item(0).getTextContent();
 		return "Waluta: " + currency + " (" + ab + ")\nData: " + effectiveDate + "\nCena: " + mid;
 	}
+	
+	public String avgGoldPrice(String startDate, String endDate) throws IOException, ParserConfigurationException, SAXException 
+	{
+		Document doc = getXMLDoc("http://api.nbp.pl/api/cenyzlota/" + startDate + "/" + endDate + "/?format=xml");
+		doc.getDocumentElement().normalize();
+		NodeList nodeList = doc.getElementsByTagName("CenaZlota");
+		Node node = nodeList.item(0);
+		double sum = 0;
+		int counter = 0;
+		while (node!=null)
+		{
+			Element element = (Element) node;
+			counter++;
+			sum+= Double.parseDouble(element.getElementsByTagName("Cena").item(0).getTextContent());
+			node = node.getNextSibling();
+		}
+		return "Œrednia cena z³ota w przedziale: " + startDate + " - " + endDate + " wynosi: " + sum/counter;	
+	}
+	
+	
 }
