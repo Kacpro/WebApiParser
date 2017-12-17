@@ -10,7 +10,13 @@ public class Main {
 
 	public static void main(String[] args) 
 	{
-		NBPApi api = new NBPApi();
+		NBPApi api = null;
+		try {
+			api = new NBPApi();
+		} catch (IOException | ParserConfigurationException | SAXException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try {
 			api.currentGoldPrice();
 		} catch (IOException e) {
@@ -24,7 +30,7 @@ public class Main {
 			e.printStackTrace();
 		}
 		try {
-			System.out.println(api.biggestAmplitude("2017-12-01"));
+			System.out.println(api.cheapestCurrency("2017-12-01"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

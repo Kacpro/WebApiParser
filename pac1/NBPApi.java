@@ -1,5 +1,6 @@
 package pac1;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -16,6 +17,24 @@ import org.xml.sax.SAXException;
 
 public class NBPApi extends GeneralAPI
 {
+	private List<String> codeList;
+	
+	
+	public NBPApi() throws IOException, ParserConfigurationException, SAXException
+	{
+		Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/tables/a/?format=xml");
+		doc.getDocumentElement().normalize();
+		codeList = new LinkedList<>();
+		NodeList nodeList = ((Element)(((Element) doc.getElementsByTagName("ExchangeRatesTable").item(0)).getElementsByTagName("Rates").item(0))).getElementsByTagName("Rate");
+		Node node = nodeList.item(0);
+		while (node != null)
+		{
+			String code = ((Element) node).getElementsByTagName("Code").item(0).getTextContent();
+			codeList.add(code);
+			node = node.getNextSibling();
+		}
+	}
+	
 	public String printhelp()
 	{
 		return "Help for NBP API";
@@ -70,24 +89,13 @@ public class NBPApi extends GeneralAPI
 		Date date = new Date();
 		String currentDate = dateFormat.format(date);
 		
-		Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/tables/a/" + startDate + "/" + currentDate + "/?format=xml");
-		doc.getDocumentElement().normalize();
-		List<String> codeList = new LinkedList<>();
-		NodeList nodeList = ((Element)(((Element) doc.getElementsByTagName("ExchangeRatesTable").item(0)).getElementsByTagName("Rates").item(0))).getElementsByTagName("Rate");
-		Node node = nodeList.item(0);
-		while (node != null)
-		{
-			String code = ((Element) node).getElementsByTagName("Code").item(0).getTextContent();
-			codeList.add(code);
-			node = node.getNextSibling();
-		}
 		
 		double maximalAmp = 0;
 		String maximalAmpCurrency = "";
 		String maximalAmpCode = "";
 		for ( String code : codeList)
 		{
-			doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/a/"+ code + "/" + startDate + "/" + currentDate + "/?format=xml");
+			Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/a/"+ code + "/" + startDate + "/" + currentDate + "/?format=xml");
 			double min = Double.MAX_VALUE;
 			double max = Double.MIN_NORMAL;
 			NodeList list = ((Element)(((Element) doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0))).getElementsByTagName("Rate");
@@ -116,5 +124,33 @@ public class NBPApi extends GeneralAPI
 		}
 		return "Maksymalna amplituda ceny waluty\nOkres: " +  startDate + " - " + currentDate + "\nWaluta: " + maximalAmpCurrency + " (" + maximalAmpCode + ")\nWartoœæ amplitudy: " + maximalAmp;
 	}
+	
+	public String cheapestCurrency(String date) throws IOException, ParserConfigurationException, SAXException
+	{
+		double min = Double.MAX_VALUE;
+		String currencyName = "";
+		String currencyCode = "";
+		for (String code : codeList)
+		{
+			try 
+			{
+				Document doc  = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/c/" + code + "/" + date + "/?format=xml");
+				double buffer = Double.parseDouble((((Element)((Element)((Element) doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0)).getElementsByTagName("Rate").item(0)).getElementsByTagName("Bid").item(0).getTextContent()));
+				if (buffer < min)
+				{
+					min = buffer;
+					currencyName = ((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Currency").item(0).getTextContent();
+					currencyCode = ((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Code").item(0).getTextContent();
+				}
+			}
+			catch(FileNotFoundException e)
+			{
+			}
+		}
+		return "Najtañsza waluta w danym dniu\nData: " + date + "\nWaluta: " + currencyName + " (" + currencyCode + ") "+ "\nCena: " + min;
+	}
+	
+	
+	
 	
 }
