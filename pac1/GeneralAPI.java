@@ -3,8 +3,8 @@ package pac1;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,33 +23,55 @@ public abstract class GeneralAPI
 	
 	protected abstract List<Triple<String, String, String[]>> createFunctionList();
 	
-	protected  String printHelp()
-	{
-		return "This API doesn't implement manual";
-	}
+	protected  abstract String printHelp();
 	
 	
-	protected Document getXMLDoc(String strUrl) throws IOException, ParserConfigurationException, SAXException
+	protected Document getXMLDoc(String strUrl)
 	{
-		URL url = new URL(strUrl);
+		URL url = null;
+		try 
+		{
+			url = new URL(strUrl);
+		} 
+		catch (MalformedURLException e) 
+		{
+			System.out.println("B³êdny adres URL");
+			e.printStackTrace();
+			System.exit(-1);
+		}
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		docFactory.setNamespaceAware(true);
-		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-
-		Document doc = docBuilder.parse(url.openStream());
+		Document doc = null;
+		try
+		{
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+			doc = docBuilder.parse(url.openStream());
+		}
+		catch(ParserConfigurationException | SAXException | IOException e)
+		{
+			System.out.println("B³¹d podczas pobierania i parsowania danych");
+			e.printStackTrace();
+			System.exit(-1);
+		}
 		return doc;
 	}
 	
 	
-	protected void parseAndInvoke(String[] argv, Class api) throws ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
+	protected void parseAndInvoke(String[] argv, Class<?> api) 
 	{
+		if (argv.length == 0)
+		{
+			System.out.println(printHelp());
+			return;
+		}
 		for (Triple<String, String, String[]> function : functions)
 		{
 			if(argv[0].equals(function.second()))
 			{
 				if(argv.length != function.third().length + 1)
 				{
-					throw new InputMismatchException();
+					System.out.println("B³êdna liczba parametrów. Oczekiwana: " + function.third().length + ", aktualna: " + (argv.length -1) );
+					System.exit(-1);
 				}
 				String[] arguments = new String[function.third().length];
 				for (int i=0; i< function.third().length; i++)
@@ -61,10 +83,23 @@ public abstract class GeneralAPI
 					}
 					else
 					{
-						throw new InputMismatchException();
+						System.out.println("B³êdny format parametrów. Oczekiwany format: " + function.third()[i] + ", wartoœæ aktualna: " + argv[i+1]);
+						System.exit(-1);
 					}
 				}
-				Class<?> _api = Class.forName(api.getName());
+				Class<?> _api = null;
+				
+				try 
+				{
+					_api = Class.forName(api.getName());
+				} 
+				catch (ClassNotFoundException e)
+				{
+					System.out.println("B³¹d przy dostêpie do api");
+					e.printStackTrace();
+					System.exit(-1);
+				}
+				
 				Method[] methods = _api.getDeclaredMethods();
 				Method method = null;
 				for (Method m : methods)
@@ -79,7 +114,17 @@ public abstract class GeneralAPI
 				{
 					obj[i] = arguments[i];
 				}
-				method.invoke(api.newInstance(), obj);
+				try 
+				{
+					method.invoke(api.newInstance(), obj);
+				} 
+				catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+						| InstantiationException e) 
+				{
+					System.out.println("Nie mo¿na wywo³aæ ¿¹danej metody");
+					e.printStackTrace();
+					System.exit(-1);
+				}
 				break;
 			}
 		}

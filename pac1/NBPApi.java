@@ -1,9 +1,8 @@
 package pac1;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,9 +32,10 @@ public class NBPApi extends GeneralAPI
 	private List<String> codeList;
 	
 	
-	public NBPApi() throws IOException, ParserConfigurationException, SAXException
+	public NBPApi() 
 	{
-		Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/tables/a/?format=xml");
+		Document doc;
+		doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/tables/a/?format=xml");
 		doc.getDocumentElement().normalize();
 		codeList = new LinkedList<>();
 		NodeList nodeList = ((Element)(((Element) doc.getElementsByTagName("ExchangeRatesTable").item(0)).getElementsByTagName("Rates").item(0))).getElementsByTagName("Rate");
@@ -48,13 +48,13 @@ public class NBPApi extends GeneralAPI
 		}
 	}
 	
-	
-	public String printhelp()
+	@Override
+	public String printHelp()
 	{
 		return "Help for NBP API";
 	}
 	
-	public void execute(String[] argv) throws ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
+	public void execute(String[] argv) 
 	{
 		parseAndInvoke(argv, this.getClass());
 	}
@@ -168,19 +168,13 @@ public class NBPApi extends GeneralAPI
 		String currencyCode = "";
 		for (String code : codeList)
 		{
-			try 
+			Document doc  = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/c/" + code + "/" + date + "/?format=xml");
+			double buffer = Double.parseDouble((((Element)((Element)((Element) doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0)).getElementsByTagName("Rate").item(0)).getElementsByTagName("Bid").item(0).getTextContent()));
+			if (buffer < min)
 			{
-				Document doc  = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/c/" + code + "/" + date + "/?format=xml");
-				double buffer = Double.parseDouble((((Element)((Element)((Element) doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0)).getElementsByTagName("Rate").item(0)).getElementsByTagName("Bid").item(0).getTextContent()));
-				if (buffer < min)
-				{
-					min = buffer;
-					currencyName = ((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Currency").item(0).getTextContent();
-					currencyCode = code;
-				}
-			}
-			catch(FileNotFoundException e)
-			{
+				min = buffer;
+				currencyName = ((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Currency").item(0).getTextContent();
+				currencyCode = code;
 			}
 		}
 		System.out.println("Najtañsza waluta w danym dniu\nData: " + date + "\nWaluta: " + currencyName + " (" + currencyCode + ") "+ "\nCena: " + min);
@@ -192,18 +186,12 @@ public class NBPApi extends GeneralAPI
 		int number = Integer.parseInt(num);
 		for (String code : codeList)
 		{
-			try
-			{
 			Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/c/" + code + "/" + date + "/?format=xml");
 			Double bid = Double.parseDouble((((Element)((Element)((Element) doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0)).getElementsByTagName("Rate").item(0)).getElementsByTagName("Bid").item(0).getTextContent()));
 			Double ask = Double.parseDouble((((Element)((Element)((Element) doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0)).getElementsByTagName("Rate").item(0)).getElementsByTagName("Ask").item(0).getTextContent()));
 			Double value = ask - bid;
 			String name = ((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Currency").item(0).getTextContent() + " (" + code + ") ";
 			profitMap.put(value, name);
-			}
-			catch(FileNotFoundException e)
-			{
-			}
 		}
 		String result = "";
 		for (int i=0;i<number;i++)
@@ -245,26 +233,58 @@ public class NBPApi extends GeneralAPI
 		NodeList rateList = ((Element)((Element)doc.getElementsByTagName("ExchangeRatesSeries").item(0)).getElementsByTagName("Rates").item(0)).getElementsByTagName("Rate");
 		SortedMap<Double, String> rateMap = new TreeMap<>();
 		Node rate = rateList.item(0);
+		List<Triple<String, Double, Integer>> daysOfWeek = new LinkedList<>();
 		while (rate != null)
 		{
 			String date = ((Element) rate).getElementsByTagName("EffectiveDate").item(0).getTextContent();
 			Double price = Double.parseDouble(((Element) rate).getElementsByTagName("Mid").item(0).getTextContent());
 			rateMap.put(price, date);
 			rate = rate.getNextSibling();
+			
+			Date day = null;
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			try 
+			{
+				day = dateFormat.parse(date);
+			} 
+			catch (ParseException e) 
+			{
+				e.printStackTrace();
+			}
+			
+			
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(day);
+			daysOfWeek.add(new Triple<String, Double, Integer>(date, price, cal.get(Calendar.DAY_OF_WEEK)));
+			
 		}
 		rate = rateList.item(0);
 		Double step = (rateMap.lastKey() - rateMap.firstKey())/100;
-		while (rate != null)
+				
+		for (int i=2; i<= 6; i++)
 		{
-			Double price = Double.parseDouble(((Element) rate).getElementsByTagName("Mid").item(0).getTextContent());
-			Double value = price - rateMap.firstKey();
-			System.out.print(rateMap.get(price) +"    X");
-			for (int i=0; i< value*1.0/step ; i++)
+			switch(i)
 			{
-				System.out.print("X");
+			case 2: System.out.println("Poniedzia³ek\n"); break;
+			case 3: System.out.println("Wtorek\n"); break;
+			case 4: System.out.println("Œroda\n"); break;
+			case 5: System.out.println("Czwartek\n"); break;
+			case 6: System.out.println("Pi¹tek\n"); break;
 			}
-			System.out.println("");	
-			rate = rate.getNextSibling();
+			for (Triple<String, Double, Integer> record : daysOfWeek)
+			{
+				if(record.third() == i)
+				{
+					Double value = record.second() - rateMap.firstKey();
+					System.out.print(record.first() +"    X");
+					for (int j=0; j< value*1.0/step ; j++)
+					{
+						System.out.print("X");
+					}
+					System.out.print("   " + record.second() + "\n");	
+				}
+			}
+			System.out.println("\n\n");
 		}
 	}
 	
