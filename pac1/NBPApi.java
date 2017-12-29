@@ -2,6 +2,7 @@ package pac1;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -19,6 +20,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+/**
+ * Klasa odpowiedzialna za przetwarzanie
+ * zapytañ do api.NBP oraz prezentowanie
+ * wyników u¿ytkownikowi
+ */
+
 
 public class NBPApi extends GeneralAPI
 {
@@ -40,24 +48,47 @@ public class NBPApi extends GeneralAPI
 		}
 	}
 	
+	
 	public String printhelp()
 	{
 		return "Help for NBP API";
 	}
 	
-	public String currentGoldPrice() throws IOException, ParserConfigurationException, SAXException
+	public void execute(String[] argv) throws ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
+	{
+		parseAndInvoke(argv, this.getClass());
+	}
+	
+	
+	@Override
+	protected List<Triple<String, String, String[]>> createFunctionList() 
+	{
+		List<Triple<String, String, String[]>> functionList = new LinkedList<>();
+		functionList.add(new Triple<String, String, String[]>("currentGoldPrice", "A", new String[]{}));
+		functionList.add(new Triple<String, String, String[]>("currencyPrice", "B", new String[]{"[a-zA-Z]{3}", "\\d{4}-\\d{2}-\\d{2}"}));
+		functionList.add(new Triple<String, String, String[]>("avgGoldPrice", "C", new String[]{"\\d{4}-\\d{2}-\\d{2}", "\\d{4}-\\d{2}-\\d{2}"}));
+		functionList.add(new Triple<String, String, String[]>("biggestAmplitude", "D", new String[]{"\\d{4}-\\d{2}-\\d{2}"}));
+		functionList.add(new Triple<String, String, String[]>("cheapestCurrency", "E", new String[]{"\\d{4}-\\d{2}-\\d{2}"}));
+		functionList.add(new Triple<String, String, String[]>("profitSort", "F", new String[]{"\\d{4}-\\d{2}-\\d{2}", "\\d+"}));
+		functionList.add(new Triple<String, String, String[]>("bestAndWorstDayToBuy", "G", new String[]{"[a-zA-Z]{3}"}));
+		functionList.add(new Triple<String, String, String[]>("printGraph", "H", new String[]{"[a-zA-Z]{3}", "\\d{4}-\\d{2}-\\d{2}", "\\d{4}-\\d{2}-\\d{2}"}));
+		
+		return functionList;
+	}
+	
+	public void currentGoldPrice() throws IOException, ParserConfigurationException, SAXException
 	{
 		Document doc = getXMLDoc("http://api.nbp.pl/api/cenyzlota/?format=xml");
 		doc.getDocumentElement().normalize();
 		NodeList nodeList = doc.getElementsByTagName("CenaZlota");
 		Node node = nodeList.item(0);
 		Element element = (Element) node;
-		return "Cena z³ota w dniu " + 
+		System.out.println("Cena z³ota w dniu " + 
 		element.getElementsByTagName("Data").item(0).getTextContent() + 
-		" wynosi " + element.getElementsByTagName("Cena").item(0).getTextContent() + "z³";	
+		" wynosi " + element.getElementsByTagName("Cena").item(0).getTextContent() + "z³");	
 	}
 	
-	public String currencyPrice(String code, String date) throws IOException, ParserConfigurationException, SAXException
+	public void currencyPrice(String code, String date) throws IOException, ParserConfigurationException, SAXException
 	{
 		Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/A/" + code + "/" + date + "/?format=xml");
 		doc.getDocumentElement().normalize();
@@ -67,10 +98,10 @@ public class NBPApi extends GeneralAPI
 		Element element = (Element) rateNode;
 		String effectiveDate = element.getElementsByTagName("EffectiveDate").item(0).getTextContent();
 		String mid = element.getElementsByTagName("Mid").item(0).getTextContent();
-		return "Waluta: " + currency + " (" + ab + ")\nData: " + effectiveDate + "\nCena: " + mid;
+		System.out.println("Waluta: " + currency + " (" + ab + ")\nData: " + effectiveDate + "\nCena: " + mid);
 	}
 	
-	public String avgGoldPrice(String startDate, String endDate) throws IOException, ParserConfigurationException, SAXException 
+	public void avgGoldPrice(String startDate, String endDate) throws IOException, ParserConfigurationException, SAXException 
 	{
 		Document doc = getXMLDoc("http://api.nbp.pl/api/cenyzlota/" + startDate + "/" + endDate + "/?format=xml");
 		doc.getDocumentElement().normalize();
@@ -85,10 +116,10 @@ public class NBPApi extends GeneralAPI
 			sum+= Double.parseDouble(element.getElementsByTagName("Cena").item(0).getTextContent());
 			node = node.getNextSibling();
 		}
-		return "Œrednia cena z³ota w przedziale: " + startDate + " - " + endDate + " wynosi: " + sum/counter;	
+		System.out.println(String.format("Œrednia cena z³ota w przedziale: " + startDate + " - " + endDate + " wynosi: " + "%1$.2f", sum/counter ));	
 	}
 	
-	public String biggestAmplitude(String startDate) throws IOException, ParserConfigurationException, SAXException
+	public void biggestAmplitude(String startDate) throws IOException, ParserConfigurationException, SAXException
 	{
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Date date = new Date();
@@ -127,10 +158,10 @@ public class NBPApi extends GeneralAPI
 				maximalAmpCode = doc.getElementsByTagName("Code").item(0).getTextContent();
 			}
 		}
-		return "Maksymalna amplituda ceny waluty\nOkres: " +  startDate + " - " + currentDate + "\nWaluta: " + maximalAmpCurrency + " (" + maximalAmpCode + ")\nWartoœæ amplitudy: " + maximalAmp;
+		System.out.println("Maksymalna amplituda ceny waluty\nOkres: " +  startDate + " - " + currentDate + "\nWaluta: " + maximalAmpCurrency + " (" + maximalAmpCode + ")\nWartoœæ amplitudy: " + maximalAmp);
 	}
 	
-	public String cheapestCurrency(String date) throws IOException, ParserConfigurationException, SAXException
+	public void cheapestCurrency(String date) throws IOException, ParserConfigurationException, SAXException
 	{
 		double min = Double.MAX_VALUE;
 		String currencyName = "";
@@ -152,12 +183,13 @@ public class NBPApi extends GeneralAPI
 			{
 			}
 		}
-		return "Najtañsza waluta w danym dniu\nData: " + date + "\nWaluta: " + currencyName + " (" + currencyCode + ") "+ "\nCena: " + min;
+		System.out.println("Najtañsza waluta w danym dniu\nData: " + date + "\nWaluta: " + currencyName + " (" + currencyCode + ") "+ "\nCena: " + min);
 	}
 	
-	public String profitSort(String date, int number) throws IOException, ParserConfigurationException, SAXException
+	public void profitSort(String date, String num) throws IOException, ParserConfigurationException, SAXException
 	{
 		SortedMap<Double, String> profitMap = new TreeMap<>();
+		int number = Integer.parseInt(num);
 		for (String code : codeList)
 		{
 			try
@@ -179,11 +211,11 @@ public class NBPApi extends GeneralAPI
 			result += profitMap.get(profitMap.lastKey()) + " - " + profitMap.lastKey() + "\n";
 			profitMap = profitMap.headMap(profitMap.lastKey());
 		}
-		return result;
+		System.out.println(result);
 	}
 	
 	
-	public String bestAndWorstDayToBuy(String currency) throws IOException, ParserConfigurationException, SAXException
+	public void bestAndWorstDayToBuy(String currency) throws IOException, ParserConfigurationException, SAXException
 	{
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Calendar cal  = new GregorianCalendar();
@@ -204,7 +236,7 @@ public class NBPApi extends GeneralAPI
 			rateMap.put(price, date);
 			rate = rate.getNextSibling();
 		}
-		return "Cena max: " + rateMap.get(rateMap.lastKey()) + "  -  " + rateMap.lastKey() + "\nCena min: " + rateMap.get(rateMap.firstKey()) + "  -  " + rateMap.firstKey();
+		System.out.println("Cena max: " + rateMap.get(rateMap.lastKey()) + "  -  " + rateMap.lastKey() + "\nCena min: " + rateMap.get(rateMap.firstKey()) + "  -  " + rateMap.firstKey());
 	}
 	
 	public void printGraph(String currency, String startDate, String endDate) throws IOException, ParserConfigurationException, SAXException

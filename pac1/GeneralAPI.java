@@ -1,7 +1,11 @@
 package pac1;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.InputMismatchException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +19,11 @@ import org.xml.sax.SAXException;
 public abstract class GeneralAPI 
 {
 	
-	protected String printHelp()
+	protected List<Triple<String, String, String[]>> functions = createFunctionList();
+	
+	protected abstract List<Triple<String, String, String[]>> createFunctionList();
+	
+	protected  String printHelp()
 	{
 		return "This API doesn't implement manual";
 	}
@@ -32,10 +40,50 @@ public abstract class GeneralAPI
 		return doc;
 	}
 	
-	protected Boolean dateIsValid(String date)
+	
+	protected void parseAndInvoke(String[] argv, Class api) throws ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException
 	{
-		String pattern = "\\d{4}-\\d{2}-\\d{2}";
-		Matcher matcher = Pattern.compile("").matcher(date);
-		return matcher.matches();
+		for (Triple<String, String, String[]> function : functions)
+		{
+			if(argv[0].equals(function.second()))
+			{
+				if(argv.length != function.third().length + 1)
+				{
+					throw new InputMismatchException();
+				}
+				String[] arguments = new String[function.third().length];
+				for (int i=0; i< function.third().length; i++)
+				{
+					Matcher matcher = Pattern.compile(function.third()[i]).matcher(argv[i+1]);
+					if (matcher.matches())
+					{
+						arguments[i] = argv[i+1];
+					}
+					else
+					{
+						throw new InputMismatchException();
+					}
+				}
+				Class<?> _api = Class.forName(api.getName());
+				Method[] methods = _api.getDeclaredMethods();
+				Method method = null;
+				for (Method m : methods)
+				{
+					if (m.getName().equals(function.first()))
+					{
+						method = m;
+					}
+				}
+				Object[] obj = new Object[arguments.length];
+				for (int i=0; i<arguments.length; i++)
+				{
+					obj[i] = arguments[i];
+				}
+				method.invoke(api.newInstance(), obj);
+				break;
+			}
+		}
 	}
+	
+
 }
