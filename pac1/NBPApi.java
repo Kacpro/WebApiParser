@@ -119,8 +119,8 @@ public class NBPApi extends GeneralAPI
 	/**
 	 * Funkcja wypisuje cenê podanej waluty w podanym dniu
 	 * 
-	 * @param code
-	 * @param date
+	 * @param code kod waluty
+	 * @param date data
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
@@ -142,8 +142,8 @@ public class NBPApi extends GeneralAPI
 	/**
 	 * Funkcja wypisuje œredni¹ cenê z³ota w podanym przedziale czasu
 	 * 
-	 * @param startDate
-	 * @param endDate
+	 * @param startDate Data pocz¹tkowa
+	 * @param endDate Data koncowa
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
@@ -169,8 +169,8 @@ public class NBPApi extends GeneralAPI
 	/**
 	 * Funkcja wypisuje walutê, kktórej amplituda zmian ceny by³a najwiêksza od podanej daty
 	 * 
-	 * @param startDate
-	 * @throws IOException
+	 * @param startDate Data pocz¹tkowa
+	 * @throws IOException Data koñcowa
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 */
@@ -219,7 +219,7 @@ public class NBPApi extends GeneralAPI
 	/**
 	 * Funkcja wypisuje najtañsz¹ walutê w podanym dniu
 	 * 
-	 * @param date
+	 * @param date Data
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
@@ -246,8 +246,8 @@ public class NBPApi extends GeneralAPI
 	/**
 	 * Funkcja wypisuje podan¹ iloœæ walut, których ró¿nica miêdzy cen¹ zakupu i sprzeda¿y by³a najwiêksza w podanym dniu
 	 * 
-	 * @param date
-	 * @param num
+	 * @param date Data
+	 * @param num Iloœæ walut do wypisania
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
@@ -277,7 +277,7 @@ public class NBPApi extends GeneralAPI
 	/**
 	 * Funkcja wypisuje kiedy dana waluta by³a najtañsza, a kiedy najdro¿sza
 	 * 
-	 * @param currency
+	 * @param currency kod waluty
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
@@ -309,9 +309,9 @@ public class NBPApi extends GeneralAPI
 	/**
 	 * Funkcja rysuje wykres zmian wartoœci podanej waluty w podanym zakresie z podzia³em na dni tygodnia
 	 * 
-	 * @param currency
-	 * @param startDate
-	 * @param endDate
+	 * @param currency Kod waluty
+	 * @param startDate Data pocz¹tkowa
+	 * @param endDate Data koñcowa
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 * @throws SAXException

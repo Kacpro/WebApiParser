@@ -34,8 +34,8 @@ public abstract class GeneralAPI
 	/**
 	 * FUnkcja tworzy strukturê dokumentu na podstawie danych pobranych w podanego adresu URL
 	 * 
-	 * @param strUrl
-	 * @return
+	 * @param strUrl URL
+	 * @return instancja typu Dokument
 	 */
 	protected Document getXMLDoc(String strUrl)
 	{
@@ -70,8 +70,8 @@ public abstract class GeneralAPI
 	/**
 	 * Funkcja parsuje parametry z linii komend oraz wywo³uje ¿¹dane metody
 	 * 
-	 * @param argv
-	 * @param api
+	 * @param argv Tablica argumentów z linii komend
+	 * @param api Api jakie wykokrzystujemy
 	 */
 	protected void parseAndInvoke(String[] argv, Class<?> api) 
 	{
