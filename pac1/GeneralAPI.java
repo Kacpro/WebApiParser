@@ -16,6 +16,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+/**
+ * 
+ * Klasa zawieraj¹ca metody wspólne dla wszystkich api obs³ugiwanych przed ten program
+ *
+ */
+
 public abstract class GeneralAPI 
 {
 	
@@ -25,7 +31,12 @@ public abstract class GeneralAPI
 	
 	protected  abstract String printHelp();
 	
-	
+	/**
+	 * FUnkcja tworzy strukturê dokumentu na podstawie danych pobranych w podanego adresu URL
+	 * 
+	 * @param strUrl
+	 * @return
+	 */
 	protected Document getXMLDoc(String strUrl)
 	{
 		URL url = null;
@@ -56,7 +67,12 @@ public abstract class GeneralAPI
 		return doc;
 	}
 	
-	
+	/**
+	 * Funkcja parsuje parametry z linii komend oraz wywo³uje ¿¹dane metody
+	 * 
+	 * @param argv
+	 * @param api
+	 */
 	protected void parseAndInvoke(String[] argv, Class<?> api) 
 	{
 		if (argv.length == 0)

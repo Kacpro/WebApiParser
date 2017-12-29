@@ -31,7 +31,9 @@ public class NBPApi extends GeneralAPI
 {
 	private List<String> codeList;
 	
-	
+	/**
+	 * Konstruktor, inicjalizuje listê kodów walut
+	 */
 	public NBPApi() 
 	{
 		Document doc;
@@ -48,17 +50,36 @@ public class NBPApi extends GeneralAPI
 		}
 	}
 	
+	/**
+	 * Funkcja wypisuj¹ca pomoc w przypadku nie podania ¿adnych parametrów
+	 */
+	
 	@Override
 	public String printHelp()
 	{
-		return "Help for NBP API";
+		return "Manual\n"
+				+ "A - currentGoldPrice\n"
+				+ "B - currencyPrice <Kod> <Data>\n"
+				+ "C - avgGoldPrice <Data> <Data>\n"
+				+ "D - biggestAmplitude <Data>\n"
+				+ "E - cheapestCurrency <Data>\n"
+				+ "F - profitSort <Data> <Liczba>\n"
+				+ "G - bestAndWorstDayToBuy <Kod>\n"
+				+ "H - printGraph <Kod> <Data> <Data>\n";
 	}
 	
+	
+	/*
+	 * Funkcja odpowiedzialna za wywo³anie ¿¹danej metody
+	 */
 	public void execute(String[] argv) 
 	{
 		parseAndInvoke(argv, this.getClass());
 	}
 	
+	/**
+	 * Funkcja inicjalizuj¹ca listê dostêpnych funkcji i ich parametrów wywo³ania
+	 */
 	
 	@Override
 	protected List<Triple<String, String, String[]>> createFunctionList() 
@@ -76,6 +97,13 @@ public class NBPApi extends GeneralAPI
 		return functionList;
 	}
 	
+	/**
+	 * Funkcja wypisuj¹ca obecn¹ cenê z³ota
+	 *  
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	public void currentGoldPrice() throws IOException, ParserConfigurationException, SAXException
 	{
 		Document doc = getXMLDoc("http://api.nbp.pl/api/cenyzlota/?format=xml");
@@ -88,6 +116,16 @@ public class NBPApi extends GeneralAPI
 		" wynosi " + element.getElementsByTagName("Cena").item(0).getTextContent() + "z³");	
 	}
 	
+	/**
+	 * Funkcja wypisuje cenê podanej waluty w podanym dniu
+	 * 
+	 * @param code
+	 * @param date
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
+	 
 	public void currencyPrice(String code, String date) throws IOException, ParserConfigurationException, SAXException
 	{
 		Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/A/" + code + "/" + date + "/?format=xml");
@@ -101,6 +139,15 @@ public class NBPApi extends GeneralAPI
 		System.out.println("Waluta: " + currency + " (" + ab + ")\nData: " + effectiveDate + "\nCena: " + mid);
 	}
 	
+	/**
+	 * Funkcja wypisuje œredni¹ cenê z³ota w podanym przedziale czasu
+	 * 
+	 * @param startDate
+	 * @param endDate
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	public void avgGoldPrice(String startDate, String endDate) throws IOException, ParserConfigurationException, SAXException 
 	{
 		Document doc = getXMLDoc("http://api.nbp.pl/api/cenyzlota/" + startDate + "/" + endDate + "/?format=xml");
@@ -119,6 +166,14 @@ public class NBPApi extends GeneralAPI
 		System.out.println(String.format("Œrednia cena z³ota w przedziale: " + startDate + " - " + endDate + " wynosi: " + "%1$.2f", sum/counter ));	
 	}
 	
+	/**
+	 * Funkcja wypisuje walutê, kktórej amplituda zmian ceny by³a najwiêksza od podanej daty
+	 * 
+	 * @param startDate
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	public void biggestAmplitude(String startDate) throws IOException, ParserConfigurationException, SAXException
 	{
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -161,6 +216,14 @@ public class NBPApi extends GeneralAPI
 		System.out.println("Maksymalna amplituda ceny waluty\nOkres: " +  startDate + " - " + currentDate + "\nWaluta: " + maximalAmpCurrency + " (" + maximalAmpCode + ")\nWartoœæ amplitudy: " + maximalAmp);
 	}
 	
+	/**
+	 * Funkcja wypisuje najtañsz¹ walutê w podanym dniu
+	 * 
+	 * @param date
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	public void cheapestCurrency(String date) throws IOException, ParserConfigurationException, SAXException
 	{
 		double min = Double.MAX_VALUE;
@@ -180,6 +243,15 @@ public class NBPApi extends GeneralAPI
 		System.out.println("Najtañsza waluta w danym dniu\nData: " + date + "\nWaluta: " + currencyName + " (" + currencyCode + ") "+ "\nCena: " + min);
 	}
 	
+	/**
+	 * Funkcja wypisuje podan¹ iloœæ walut, których ró¿nica miêdzy cen¹ zakupu i sprzeda¿y by³a najwiêksza w podanym dniu
+	 * 
+	 * @param date
+	 * @param num
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	public void profitSort(String date, String num) throws IOException, ParserConfigurationException, SAXException
 	{
 		SortedMap<Double, String> profitMap = new TreeMap<>();
@@ -202,7 +274,14 @@ public class NBPApi extends GeneralAPI
 		System.out.println(result);
 	}
 	
-	
+	/**
+	 * Funkcja wypisuje kiedy dana waluta by³a najtañsza, a kiedy najdro¿sza
+	 * 
+	 * @param currency
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	public void bestAndWorstDayToBuy(String currency) throws IOException, ParserConfigurationException, SAXException
 	{
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -227,6 +306,16 @@ public class NBPApi extends GeneralAPI
 		System.out.println("Cena max: " + rateMap.get(rateMap.lastKey()) + "  -  " + rateMap.lastKey() + "\nCena min: " + rateMap.get(rateMap.firstKey()) + "  -  " + rateMap.firstKey());
 	}
 	
+	/**
+	 * Funkcja rysuje wykres zmian wartoœci podanej waluty w podanym zakresie z podzia³em na dni tygodnia
+	 * 
+	 * @param currency
+	 * @param startDate
+	 * @param endDate
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	public void printGraph(String currency, String startDate, String endDate) throws IOException, ParserConfigurationException, SAXException
 	{
 		Document doc = getXMLDoc("http://api.nbp.pl/api/exchangerates/rates/a/" + currency + "/" + startDate + "/" + endDate +"/?format=xml");
