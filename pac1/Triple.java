@@ -4,7 +4,7 @@ package pac1;
  * Klasa do przechowywania trzech alaementów niekoniecznie tego samego typu
  *
  * @param <T1>
- * @param <T2>
+ * @param <T2> 
  * @param <T3>
  */
 public class Triple<T1, T2, T3>

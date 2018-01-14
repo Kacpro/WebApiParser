@@ -30,14 +30,17 @@ public abstract class GeneralAPI
 	protected abstract List<Triple<String, String, String[]>> createFunctionList();
 	
 	protected  abstract String printHelp();
-	
+	 
 	/**
 	 * FUnkcja tworzy strukturê dokumentu na podstawie danych pobranych w podanego adresu URL
 	 * 
 	 * @param strUrl URL
 	 * @return instancja typu Dokument
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
 	 */
-	protected Document getXMLDoc(String strUrl)
+	protected Document getXMLDoc(String strUrl) throws SAXException, IOException, ParserConfigurationException
 	{
 		URL url = null;
 		try 
@@ -47,23 +50,13 @@ public abstract class GeneralAPI
 		catch (MalformedURLException e) 
 		{
 			System.out.println("B³êdny adres URL");
-			e.printStackTrace();
 			System.exit(-1);
 		}
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		docFactory.setNamespaceAware(true);
 		Document doc = null;
-		try
-		{
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			doc = docBuilder.parse(url.openStream());
-		}
-		catch(ParserConfigurationException | SAXException | IOException e)
-		{
-			System.out.println("B³¹d podczas pobierania i parsowania danych");
-			e.printStackTrace();
-			System.exit(-1);
-		}
+		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+		doc = docBuilder.parse(url.openStream());
 		return doc;
 	}
 	
@@ -112,7 +105,6 @@ public abstract class GeneralAPI
 				catch (ClassNotFoundException e)
 				{
 					System.out.println("B³¹d przy dostêpie do api");
-					e.printStackTrace();
 					System.exit(-1);
 				}
 				
@@ -137,8 +129,7 @@ public abstract class GeneralAPI
 				catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
 						| InstantiationException e) 
 				{
-					System.out.println("Nie mo¿na wywo³aæ ¿¹danej metody");
-					e.printStackTrace();
+					System.out.println("Problem po stronie serwera - mo¿liwy brak danych lub zbyt odleg³a data");
 					System.exit(-1);
 				}
 				break;
