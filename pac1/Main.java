@@ -17,3 +17,5 @@ public class Main {
 //F - profitSort <Data> <Liczba>
 //G - bestAndWorstDayToBuy <Kod>
 //H - printGraph <Kod> <Data> <Data>
+
+//test
